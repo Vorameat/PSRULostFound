@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "908310983865",
+    "project_id": "psrulostfound",
+    "storage_bucket": "psrulostfound.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:908310983865:android:a16ff4f07a99628d761768",
+        "android_client_info": {
+          "package_name": "com.example.psrulostfound"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAG63vV8giXj_31j62qfY59y9g5pUN4bgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
