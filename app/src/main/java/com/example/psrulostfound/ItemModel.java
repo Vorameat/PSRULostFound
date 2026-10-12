@@ -1,48 +1,53 @@
 package com.example.psrulostfound;
 
 public class ItemModel {
-    private String documentId;
-    private String type;
+    private String id;
     private String title;
+    private String description;
     private String location;
-    private String detail;
-    private String contactName;
-    private String contactPhone;
+    private String phone;
+    private String reporterName;
+    private String type;
     private String imageUrl;
+    private String status;
+    private String pinCode; // เพิ่มรองรับ PIN 4 หลัก
+    private String userId;  // เพิ่มรองรับ User ID
 
-    // Constructor เปล่า (จำเป็นสำหรับ Firestore/Firebase)
-    public ItemModel() {
-    }
+    // Constructor เปล่า (จำเป็นสำหรับ Firebase Firestore)
+    public ItemModel() { }
 
-    // Constructor รับค่า 8 พารามิเตอร์ (ที่กำลังเรียกใช้ใน AddPostActivity)
-    public ItemModel(String documentId, String type, String title, String location, String detail, String contactName, String contactPhone, String imageUrl) {
-        this.documentId = documentId;
-        this.type = type;
-        this.title = title;
-        this.location = location;
-        this.detail = detail;
-        this.contactName = contactName;
-        this.contactPhone = contactPhone;
-        this.imageUrl = imageUrl;
-    }
+    // --- Getter and Setter ---
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    // Getters
-    public String getDocumentId() { return documentId; }
-    public String getType() { return type; }
     public String getTitle() { return title; }
-    public String getLocation() { return location; }
-    public String getDetail() { return detail; }
-    public String getContactName() { return contactName; }
-    public String getContactPhone() { return contactPhone; }
-    public String getImageUrl() { return imageUrl; }
-
-    // Setters
-    public void setDocumentId(String documentId) { this.documentId = documentId; }
-    public void setType(String type) { this.type = type; }
     public void setTitle(String title) { this.title = title; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
-    public void setDetail(String detail) { this.detail = detail; }
-    public void setContactName(String contactName) { this.contactName = contactName; }
-    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getReporterName() { return reporterName; }
+    public void setReporterName(String reporterName) { this.reporterName = reporterName; }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+
+    public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getPinCode() { return pinCode; }
+    public void setPinCode(String pinCode) { this.pinCode = pinCode; }
+
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
 }

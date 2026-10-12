@@ -2,18 +2,14 @@ package com.example.psrulostfound;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
-
 import java.util.List;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
@@ -37,53 +33,29 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ItemModel item = itemList.get(position);
 
-        if (holder.tvStatus != null) {
-            String type = item.getType();
-            if (type != null && !type.trim().isEmpty()) {
-                if (type.contains("ได้รับ") || type.contains("คืนแล้ว") || type.contains("เสร็จสิ้น") || type.contains("Completed")) {
-                    holder.tvStatus.setText("ได้รับของคืนแล้ว");
-                    holder.tvStatus.setTextColor(Color.parseColor("#4CAF50")); // สีเขียว
-                } else if (type.contains("พบของ") || type.contains("Found")) {
-                    holder.tvStatus.setText(type);
-                    holder.tvStatus.setTextColor(Color.parseColor("#2196F3")); // สีฟ้า
-                } else {
-                    holder.tvStatus.setText(type);
-                    holder.tvStatus.setTextColor(Color.parseColor("#F44336")); // สีแดง
-                }
-            } else {
-                holder.tvStatus.setText("ไม่ระบุ");
-            }
-        }
-
         holder.tvTitle.setText(item.getTitle() != null ? item.getTitle() : "");
         holder.tvLocation.setText("สถานที่: " + (item.getLocation() != null ? item.getLocation() : ""));
-        holder.tvContact.setText("ผู้แจ้ง: " + (item.getContactName() != null ? item.getContactName() : "") +
-                " (" + (item.getContactPhone() != null ? item.getContactPhone() : "") + ")");
+        holder.tvReporter.setText("ผู้แจ้ง: " + (item.getReporterName() != null ? item.getReporterName() : ""));
 
         if (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) {
-            Glide.with(context)
-                    .load(item.getImageUrl())
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .error(android.R.drawable.ic_menu_gallery)
-                    .into(holder.imgItem);
+            Glide.with(context).load(item.getImageUrl()).into(holder.imgItem);
         } else {
-            holder.imgItem.setImageResource(android.R.drawable.ic_menu_gallery);
+            holder.imgItem.setImageResource(R.drawable.ic_launcher_background);
         }
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ItemDetailActivity.class);
-            intent.putExtra("documentId", item.getDocumentId());
+            intent.putExtra("documentId", item.getId());
             intent.putExtra("title", item.getTitle());
-            intent.putExtra("category", item.getType());
+            intent.putExtra("description", item.getDescription());
             intent.putExtra("location", item.getLocation());
-            intent.putExtra("description", item.getDetail());
-            intent.putExtra("reporter", item.getContactName());
-            intent.putExtra("phone", item.getContactPhone());
-
-            String imgUrl = item.getImageUrl();
-            if (imgUrl != null && !imgUrl.startsWith("data:image") && imgUrl.length() < 1000) {
-                intent.putExtra("imageUrl", imgUrl);
-            }
+            intent.putExtra("phone", item.getPhone());
+            intent.putExtra("reporterName", item.getReporterName());
+            intent.putExtra("imageUrl", item.getImageUrl());
+            intent.putExtra("type", item.getType());
+            intent.putExtra("status", item.getStatus());
+            intent.putExtra("userId", item.getUserId());
+            intent.putExtra("pin", item.getPinCode());
 
             context.startActivity(intent);
         });
@@ -94,16 +66,21 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         return itemList != null ? itemList.size() : 0;
     }
 
+    // เมธอดรองรับการค้นหา
+    public void filterList(List<ItemModel> filteredList) {
+        this.itemList = filteredList;
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvStatus, tvTitle, tvLocation, tvContact;
+        TextView tvTitle, tvLocation, tvReporter;
         ImageView imgItem;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvStatus = itemView.findViewById(R.id.tvStatus);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvLocation = itemView.findViewById(R.id.tvLocation);
-            tvContact = itemView.findViewById(R.id.tvContact);
+            tvReporter = itemView.findViewById(R.id.tvReporter);
             imgItem = itemView.findViewById(R.id.imgItem);
         }
     }

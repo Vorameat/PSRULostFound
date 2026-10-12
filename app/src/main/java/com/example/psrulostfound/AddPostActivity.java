@@ -1,171 +1,96 @@
 package com.example.psrulostfound;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Base64;
-import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AddPostActivity extends AppCompatActivity {
 
-    private Spinner spinnerType, spinnerLocation;
-    private EditText etTitle, etDetail, etContactName, etContactPhone;
-    private Button btnSelectImage, btnSubmit;
-    private ImageView imgPreview;
-    private Uri imageUri;
-
+    // 1. ประกาศตัวแปรทั้งหมดไว้บนสุดตรงนี้ (นอกทุกเมธอด)
+    private EditText etTitle, etDescription, etLocation, etPhone, etReporterName, etType, etImageUrl, etPinCode;
+    private Button btnSubmit;
     private FirebaseFirestore db;
-    private FirebaseStorage storage;
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_post);
+        setContentView(R.layout.activity_add_post2); // หรือชื่อ layout ที่คุณใช้
+
+        // 2. ผูก View ใน onCreate
+        etTitle = findViewById(R.id.etTitle);
+        etDescription = findViewById(R.id.etDescription);
+        etLocation = findViewById(R.id.etLocation);
+        etPhone = findViewById(R.id.etPhone);
+        etReporterName = findViewById(R.id.etReporterName);
+        etType = findViewById(R.id.etType);
+        etImageUrl = findViewById(R.id.etImageUrl);
+        etPinCode = findViewById(R.id.etPinCode); // เพิ่มตัวนี้
+        btnSubmit = findViewById(R.id.btnSubmit);
 
         db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
-
-        spinnerType = findViewById(R.id.spinnerType);
-        spinnerLocation = findViewById(R.id.spinnerLocation);
-        etTitle = findViewById(R.id.etTitle);
-        etDetail = findViewById(R.id.etDetail);
-        etContactName = findViewById(R.id.etContactName);
-        etContactPhone = findViewById(R.id.etContactPhone);
-        btnSelectImage = findViewById(R.id.btnSelectImage);
-        btnSubmit = findViewById(R.id.btnSubmit);
-        imgPreview = findViewById(R.id.imgPreview);
-
-        // ตัวเลือกประเภท
-        String[] types = {"ของหาย (Lost)", "พบของ (Found)"};
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, types);
-        spinnerType.setAdapter(typeAdapter);
-
-        // ตัวเลือกสถานที่ใน PSRU
-        String[] locations = {
-                "คณะวิทยาการจัดการ",
-                "คณะครุศาสตร์",
-                "คณะวิทยาศาสตร์และเทคโนโลยี",
-                "คณะเทคโนโลยีการเกษตร",
-                "คณะมนุษยศาสตร์และสังคมศาสตร์",
-                "คณะเทคโนโลยีอุตสาหกรรม",
-                "คณะพยาบาลศาสตร์",
-                "อาคารเรียนรวม (e-Testing)",
-                "สำนักวิทยบริการฯ (ห้องสมุด)",
-                "โรงอาหารกลาง / ลานกิจกรรม",
-                "หอพักนักศึกษา",
-                "สถานที่อื่นๆ ภายในมหาวิทยาลัย"
-        };
-        ArrayAdapter<String> locAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, locations);
-        spinnerLocation.setAdapter(locAdapter);
-
-        // เลือกระบบรูปภาพ
-        ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        imageUri = result.getData().getData();
-                        imgPreview.setImageURI(imageUri);
-                        imgPreview.setVisibility(View.VISIBLE);
-                    }
-                }
-        );
-
-        btnSelectImage.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            imagePickerLauncher.launch(intent);
-        });
+        auth = FirebaseAuth.getInstance(); // เพิ่มตัวนี้
 
         btnSubmit.setOnClickListener(v -> savePost());
     }
 
     private void savePost() {
+        // 3. อ่านค่าจากช่องต่างๆ ใน savePost
         String title = etTitle.getText().toString().trim();
-        String detail = etDetail.getText().toString().trim();
-        String name = etContactName.getText().toString().trim();
-        String phone = etContactPhone.getText().toString().trim();
+        String description = etDescription.getText().toString().trim();
+        String location = etLocation.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+        String reporterName = etReporterName.getText().toString().trim();
+        String type = etType.getText().toString().trim();
+        String imageUrl = etImageUrl.getText().toString().trim();
+        String pinCode = etPinCode.getText().toString().trim(); // อ่านค่า PIN
 
-        if (title.isEmpty() || name.isEmpty() || phone.isEmpty()) {
-            Toast.makeText(this, "กรุณากรอกข้อมูลให้ครบถ้วน", Toast.LENGTH_SHORT).show();
+        if (title.isEmpty() || location.isEmpty()) {
+            Toast.makeText(this, "กรุณากรอกชื่อสิ่งของและสถานที่", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // ตรวจสอบความยาวรหัส PIN
+        if (pinCode.length() != 4) {
+            Toast.makeText(this, "กรุณาตั้งรหัส PIN ให้ครบ 4 หลัก", Toast.LENGTH_SHORT).show();
             return;
         }
 
         btnSubmit.setEnabled(false);
-        Toast.makeText(this, "กำลังบันทึกข้อมูล...", Toast.LENGTH_SHORT).show();
 
-        if (imageUri != null) {
-            try {
-                // 1. แปลง Uri เป็น Bitmap และย่อขนาดรูปไม่ให้เกิน 600px
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                int width = bitmap.getWidth();
-                int height = bitmap.getHeight();
-                float ratio = (float) width / (float) height;
-                int newWidth = 600;
-                int newHeight = (int) (newWidth / ratio);
-                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+        // ดึง User ID จากระบบ Anonymous Auth ที่ล็อกอินไว้เบื้องหลัง
+        String currentUserId = (auth.getCurrentUser() != null) ? auth.getCurrentUser().getUid() : "";
 
-                // 2. บีบอัดภาพเป็น Base64 String (คุณภาพ 60%)
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 60, baos);
-                byte[] data = baos.toByteArray();
-                String base64Image = "data:image/jpeg;base64," + Base64.encodeToString(data, Base64.DEFAULT);
+        Map<String, Object> post = new HashMap<>();
+        post.put("title", title);
+        post.put("description", description);
+        post.put("location", location);
+        post.put("phone", phone);
+        post.put("reporterName", reporterName);
+        post.put("type", type);
+        post.put("imageUrl", imageUrl);
+        post.put("pinCode", pinCode);          // เก็บรหัส PIN
+        post.put("userId", currentUserId);     // เก็บ User ID คนโพสต์
+        post.put("status", "active");
 
-                // 3. ส่ง Base64 String ไปบันทึกลง Firestore ทันที
-                uploadData(base64Image);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                btnSubmit.setEnabled(true);
-                Toast.makeText(this, "จัดการรูปภาพไม่สำเร็จ", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            uploadData("");
-        }
-    }
-
-    private void uploadData(String imageUrl) {
-        String docId = UUID.randomUUID().toString();
-        ItemModel item = new ItemModel(
-                docId,
-                spinnerType.getSelectedItem().toString(),
-                etTitle.getText().toString().trim(),
-                spinnerLocation.getSelectedItem().toString(),
-                etDetail.getText().toString().trim(),
-                etContactName.getText().toString().trim(),
-                etContactPhone.getText().toString().trim(),
-                imageUrl
-        );
-
-        db.collection("posts").document(docId).set(item)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "บันทึกเรียบร้อยแล้ว!", Toast.LENGTH_SHORT).show();
+        db.collection("posts")
+                .add(post)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(AddPostActivity.this, "เพิ่มประกาศเรียบร้อยแล้ว", Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     btnSubmit.setEnabled(true);
-                    Toast.makeText(this, "เกิดข้อผิดพลาดในการบันทึก", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddPostActivity.this, "เกิดข้อผิดพลาด: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }
